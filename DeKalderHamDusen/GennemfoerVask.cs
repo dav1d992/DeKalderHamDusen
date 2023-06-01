@@ -18,13 +18,13 @@ namespace DeKalderHamDusen
         };
 
         private VaskeState _state;
-        private PortStyring _port;
+        private IPortStyring _port;
         private SkilteStyring _skilte;
-        private UdførVaskeSekvens _vaskeSekvens;
+        private IUdførVaskeSekvens _vaskeSekvens;
         private UserInterface _ui;
         private AfstandsSensor _sensor;
 
-        public GennemfoerVask(PortStyring port, SkilteStyring skilte, UdførVaskeSekvens vaskeSekvens, UserInterface ui, AfstandsSensor sensor)
+        public GennemfoerVask(IPortStyring port, SkilteStyring skilte, IUdførVaskeSekvens vaskeSekvens, UserInterface ui, AfstandsSensor sensor)
         {
             _port = port;
             _skilte = skilte;
@@ -38,7 +38,7 @@ namespace DeKalderHamDusen
             _sensor.AfstandEvent += HandleAfstandEvent;
         }
 
-        private void HandleValgAfVask(object source, ValgAfVaskEventArgs e)
+        public void HandleValgAfVask(object source, ValgAfVaskEventArgs e)
         {
             switch (_state)
             {
@@ -50,7 +50,7 @@ namespace DeKalderHamDusen
             }
         }
 
-        private void HandleVaskAfsluttet(object source, VaskAfsluttetEventArgs e)
+        public void HandleVaskAfsluttet(object source, VaskAfsluttetEventArgs e)
         {
             switch (_state)
             {
@@ -62,7 +62,7 @@ namespace DeKalderHamDusen
             }
         }
 
-        private void HandleAfstandEvent(object source, AfstandEventArgs e)
+        public void HandleAfstandEvent(object source, AfstandEventArgs e)
         {
             if (e.Afstand < 150)
             {
@@ -92,7 +92,14 @@ namespace DeKalderHamDusen
         }
     }
 
-    public class PortStyring
+
+    public interface IPortStyring
+    {
+        void LukPort();
+        void AabenPort();
+    }
+
+    public class PortStyring : IPortStyring
     {
         public void LukPort()
         {
@@ -107,7 +114,14 @@ namespace DeKalderHamDusen
         }
     }
 
-    public class UdførVaskeSekvens
+    public interface IUdførVaskeSekvens
+    {
+        event EventHandler<VaskAfsluttetEventArgs> VaskAfsluttet;
+
+        void Start(int vaskeType);
+    }
+
+    public class UdførVaskeSekvens : IUdførVaskeSekvens
     {
         public event EventHandler<VaskAfsluttetEventArgs> VaskAfsluttet;
 
@@ -128,7 +142,15 @@ namespace DeKalderHamDusen
     {
     }
 
-    public class UserInterface
+    public interface IUserInterface
+    {
+        event EventHandler<ValgAfVaskEventArgs> ValgAfVaskEvent;
+
+        void VaelgVask(VaskType vaskType);
+    }
+
+
+    public class UserInterface : IUserInterface
     {
         public event EventHandler<ValgAfVaskEventArgs> ValgAfVaskEvent;
 
@@ -144,7 +166,13 @@ namespace DeKalderHamDusen
         Premium
     }
 
-    public class AfstandsSensor
+    public interface IAfstandsSensor
+    {
+        event EventHandler<AfstandEventArgs> AfstandEvent;
+
+        void SetAfstand(int afstand);
+    }
+    public class AfstandsSensor : IAfstandsSensor
     {
         public event EventHandler<AfstandEventArgs> AfstandEvent;
 
