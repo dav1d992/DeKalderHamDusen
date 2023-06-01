@@ -1,15 +1,16 @@
 using NUnit.Framework;
 using Moq;
 using DeKalderHamDusen;
+using DeKalderHamDusen.Interfaces;
 
 namespace DeKalderHamDusenTests
 {
     public class GennemfoerVaskTests
     {
         private Mock<IPortStyring> _mockPort;
-        private Mock<SkilteStyring> _mockSkilte;
-        private Mock<UserInterface> _mockUi;
-        private Mock<AfstandsSensor> _mockSensor;
+        private Mock<ISkilteStyring> _mockSkilte;
+        private Mock<IUserInterface> _mockUi;
+        private Mock<IAfstandsSensor> _mockSensor;
         private GennemfoerVask _gennemfoerVask;
         private Mock<IUdførVaskeSekvens> _mockVaskeSekvens;
 
@@ -17,10 +18,10 @@ namespace DeKalderHamDusenTests
         public void Setup()
         {
             _mockPort = new Mock<IPortStyring>();
-            _mockSkilte = new Mock<SkilteStyring>();
+            _mockSkilte = new Mock<ISkilteStyring>();
             _mockVaskeSekvens = new Mock<IUdførVaskeSekvens>();
-            _mockUi = new Mock<UserInterface>();
-            _mockSensor = new Mock<AfstandsSensor>();
+            _mockUi = new Mock<IUserInterface>();
+            _mockSensor = new Mock<IAfstandsSensor>();
             _gennemfoerVask = new GennemfoerVask(_mockPort.Object, _mockSkilte.Object, _mockVaskeSekvens.Object, _mockUi.Object, _mockSensor.Object);
         }
 
@@ -44,6 +45,13 @@ namespace DeKalderHamDusenTests
         public void Test_HandleVaskAfsluttet_CallsAabenPortAndKoerTilbage_WhenStateIsVask()
         {
             // Arrange
+            _mockSensor.Raise(m => m.AfstandEvent += null, new AfstandEventArgs { Afstand = 100 });
+            _mockUi.Raise(m => m.ValgAfVaskEvent += null, new ValgAfVaskEventArgs { VaskeType = (int)VaskType.Standard });
+
+            // Reset mock verification count
+            _mockSkilte.Reset();
+
+            // Act: now we can test HandleVaskAfsluttet
             _gennemfoerVask.HandleVaskAfsluttet(_mockVaskeSekvens.Object, new VaskAfsluttetEventArgs());
 
             // Assert
@@ -51,6 +59,5 @@ namespace DeKalderHamDusenTests
             _mockSkilte.Verify(x => x.KoerTilbage(), Times.Once);
         }
 
-        // Write more tests for HandleAfstandEvent method with different inputs and expected behaviour.
     }
 }

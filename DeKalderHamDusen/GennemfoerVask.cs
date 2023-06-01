@@ -1,4 +1,5 @@
-﻿using DeKalderHamDusen.Models;
+﻿using DeKalderHamDusen.Interfaces;
+using DeKalderHamDusen.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,12 +20,12 @@ namespace DeKalderHamDusen
 
         private VaskeState _state;
         private IPortStyring _port;
-        private SkilteStyring _skilte;
+        private ISkilteStyring _skilte;
         private IUdførVaskeSekvens _vaskeSekvens;
-        private UserInterface _ui;
-        private AfstandsSensor _sensor;
+        private IUserInterface _ui;
+        private IAfstandsSensor _sensor;
 
-        public GennemfoerVask(IPortStyring port, SkilteStyring skilte, IUdførVaskeSekvens vaskeSekvens, UserInterface ui, AfstandsSensor sensor)
+        public GennemfoerVask(IPortStyring port, ISkilteStyring skilte, IUdførVaskeSekvens vaskeSekvens, IUserInterface ui, IAfstandsSensor sensor)
         {
             _port = port;
             _skilte = skilte;
@@ -191,45 +192,5 @@ namespace DeKalderHamDusen
     public class AfstandEventArgs : EventArgs
     {
         public int Afstand { get; set; }
-    }
-
-    public class SkilteStyring
-    {
-        private SkiltStatus _skiltStatus;
-
-        public SkilteStyring()
-        {
-            _skiltStatus = SkiltStatus.KoerFrem;
-        }
-
-        public void KoerFrem()
-        {
-            _skiltStatus = SkiltStatus.KoerFrem;
-            VisSkiltStatus();
-        }
-
-        public void Stop()
-        {
-            _skiltStatus = SkiltStatus.Stop;
-            VisSkiltStatus();
-        }
-
-        public void KoerTilbage()
-        {
-            _skiltStatus = SkiltStatus.KoerTilbage;
-            VisSkiltStatus();
-        }
-
-        private void VisSkiltStatus()
-        {
-            Console.WriteLine($"Skiltstatus: {_skiltStatus}");
-        }
-
-        private enum SkiltStatus
-        {
-            KoerFrem,
-            Stop,
-            KoerTilbage
-        }
     }
 }
